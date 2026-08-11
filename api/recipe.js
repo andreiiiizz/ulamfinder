@@ -1,6 +1,5 @@
-module.exports = async function handler(req, res) {
-  console.log('API called with method:', req.method);
-  
+export default async function handler(req, res) {
+  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -12,26 +11,21 @@ module.exports = async function handler(req, res) {
   }
 
   const API_KEY = process.env.GOOGLE_API_KEY;
-  const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-
-  console.log('API_KEY exists:', !!API_KEY);
-  console.log('MODEL:', MODEL);
+  const MODEL = process.env.GEMINI_MODEL || 'gemini-3-5-flash';
 
   if (!API_KEY) {
     return res.status(500).json({
-      error: 'API key not configured on server. Add GOOGLE_API_KEY to environment variables.'
+      error: 'API key not configured on server.'
     });
   }
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
-    console.log('Calling Gemini API at:', url);
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': API_KEY
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
@@ -40,12 +34,10 @@ module.exports = async function handler(req, res) {
     });
 
     const data = await response.json();
-    console.log('Full Gemini response:', JSON.stringify(data, null, 2));
 
     if (!response.ok) {
-      console.log('Gemini error:', data);
       return res.status(response.status).json({
-        error: data?.error?.message || `Gemini API failed with status ${response.status}`
+        error: data?.error?.message || `Gemini API failed`
       });
     }
 
