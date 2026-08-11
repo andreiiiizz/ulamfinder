@@ -3,6 +3,11 @@
   "outputDirectory": ".",
   "routes": [
     {
+      "src": "/api/.*",
+      "dest": "/api/$1",
+      "methods": ["GET", "POST", "PUT", "DELETE"]
+    },
+    {
       "src": "/sw.js",
       "headers": {
         "Cache-Control": "public, max-age=0, must-revalidate",
