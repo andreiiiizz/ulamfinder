@@ -40,7 +40,7 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    console.log('Gemini response status:', response.status);
+    console.log('Full Gemini response:', JSON.stringify(data, null, 2));
 
     if (!response.ok) {
       console.log('Gemini error:', data);
