@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ulam Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#E7ECF5;
+    --cream:#0B1220;
+    --cream-light:#121E33;
+    --surface:#1B2A46;
+    --hover:#24395C;
+    --rust:#E1613F;
+    --rust-dark:#F0876B;
+    --gold:#E8B85E;
+    --muted:#8C9AB5;
+    --green:#5FBE72;
+    --border:#26385A;
+    --tan-bar:#1E2F4D;
+    --cat-protein:#C1503A;
+    --cat-protein-dark:#E0916F;
+    --cat-protein-tint:#33251F;
+    --cat-vegetable:#5FBE72;
+    --cat-vegetable-dark:#8AD89A;
+    --cat-vegetable-tint:#1D3325;
+    --cat-pantry:#D9A94C;
+    --cat-pantry-dark:#EFC978;
+    --cat-pantry-tint:#332913;
+    --cat-aromatics:#A98BE0;
+    --cat-aromatics-dark:#C4ACEF;
+    --cat-aromatics-tint:#28223B;
+  }
+  *{box-sizing:border-box;}
+  html{scrollbar-width:none;-ms-overflow-style:none;}
+  html::-webkit-scrollbar{display:none;}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:'Inter',sans-serif;scrollbar-width:none;-ms-overflow-style:none;}
+  body::-webkit-scrollbar{display:none;}
+  .modal,.dd-panel{scrollbar-width:none;-ms-overflow-style:none;}
+  .modal::-webkit-scrollbar,.dd-panel::-webkit-scrollbar{display:none;}
+  .app{width:100%;}
+  .panel{max-width:1000px;margin:0 auto;}
+  h1,h2,h3{font-family:'Playfair Display',serif;margin:0;}
+
+  /* ---------------- HERO ---------------- */
+  .hero{
+    position:relative;
+    padding:44px 30px 40px;
+    color:#fff;
+    background:
+      linear-gradient(120deg, rgba(6,10,20,.92) 0%, rgba(10,18,34,.72) 45%, rgba(15,28,48,.35) 100%),
+      radial-gradient(ellipse at 75% 30%, #1c3f6e 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 80%, #2a5a94 0%, transparent 60%),
+      linear-gradient(160deg, #0d1626, #060a12);
+    overflow:hidden;
+  }
+  .hero::after{
+    content:'';position:absolute;inset:0;
+    background-image:
+      radial-gradient(circle at 82% 65%, rgba(120,180,255,.16) 0%, transparent 30%),
+      radial-gradient(circle at 70% 40%, rgba(90,150,240,.12) 0%, transparent 25%);
+    pointer-events:none;
+  }
+  .hero-inner{position:relative;z-index:1;max-width:560px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(217,169,76,.14);border:1px solid rgba(217,169,76,.55);
+    color:var(--gold);
+    font-size:11px;font-weight:700;letter-spacing:.1em;
+    padding:6px 14px;border-radius:20px;margin-bottom:16px;
+  }
+  .badge .flag{font-size:10px;background:var(--gold);color:#2a1c10;padding:1px 5px;border-radius:4px;letter-spacing:0;}
+  .hero h1{font-size:52px;font-weight:800;line-height:1;color:#fff;}
+  .hero h1 em{font-style:italic;color:var(--gold);font-weight:700;}
+  .hero p{margin:16px 0 0;font-size:15px;line-height:1.6;color:#E7DFCF;max-width:440px;}
+
+  /* ---------------- NAV ---------------- */
+  .nav{
+    display:flex;gap:8px;background:var(--cream-light);
+    padding:14px 24px;border-bottom:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+  .nav button{
+    display:flex;align-items:center;gap:8px;
+    font-family:'Inter',sans-serif;font-weight:600;font-size:14.5px;
+    background:var(--surface);color:var(--ink);border:1px solid var(--border);
+    padding:10px 18px;border-radius:24px;cursor:pointer;
+  }
+  .nav button.active{background:var(--rust);border-color:var(--rust);color:#fff;box-shadow:0 3px 10px rgba(225,97,63,.35);}
+  .nav button .ic{font-size:15px;}
+
+  .panel{padding:28px 30px 50px;}
+  .panel[hidden]{display:none;}
+
+  /* ---------------- BROWSE ---------------- */
+  .panel-head h2{font-size:26px;margin-bottom:6px;}
+  .panel-head p{margin:0 0 20px;color:var(--muted);font-size:14px;}
+
+  .search-bar{position:relative;margin-bottom:16px;}
+  .search-bar input{
+    width:100%;padding:14px 16px 14px 42px;border:1px solid var(--border);
+    border-radius:12px;background:var(--surface);font-size:14.5px;color:var(--ink);
+  }
+  .search-bar input:focus{outline:none;border-color:var(--rust);}
+  .search-bar .icn{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted);}
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .fchip{
+    display:flex;align-items:center;gap:6px;
+    background:var(--surface);border:1px solid var(--border);color:var(--ink);
+    font-size:13.5px;font-weight:600;padding:8px 15px;border-radius:20px;cursor:pointer;
+  }
+  .fchip.active{background:var(--rust);border-color:var(--rust);color:#fff;}
+
+  .count-line{font-size:13px;color:var(--muted);margin-bottom:14px;}
+  .count-line b{color:var(--ink);}
+
+  .grid{display:flex;flex-direction:column;gap:18px;}
+  .vcard{
+    border-radius:14px;border:1px solid var(--border);border-top:4px solid var(--card-accent,var(--rust));
+    background:var(--cream-light);padding:24px 26px;cursor:pointer;transition:transform .15s ease;
+  }
+  .vcard:hover{transform:translateY(-2px);}
+  .vcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .vcard h3{font-size:23px;margin:0;}
+  .vcard .fname{font-style:italic;color:var(--muted);font-size:14px;display:block;margin-top:2px;}
+  .vcard-badges{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0;}
+  .vcard .desc{font-size:14.5px;color:var(--muted);line-height:1.6;margin:14px 0 16px;}
+  .vcard .meta{display:flex;gap:20px;font-size:13.5px;color:var(--muted);margin-bottom:18px;}
+  .vcard .meta span{display:flex;align-items:center;gap:6px;}
+  .vcard .view-btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    background:var(--card-tint,var(--tan-bar));color:var(--card-accent,var(--rust));
+    font-family:'Inter',sans-serif;font-weight:700;font-size:15px;padding:14px;border-radius:10px;
+    border:none;cursor:pointer;
+  }
+  .mini-badge{font-size:11px;background:var(--tan-bar);color:var(--rust-dark);padding:3px 9px;border-radius:8px;font-weight:600;}
+
+  .no-match{
+    text-align:center;padding:40px 20px;color:var(--muted);
+  }
+  .no-match button{margin-top:14px;}
+
+  /* ---------------- BUTTONS ---------------- */
+  .btn-primary{
+    font-family:'Inter',sans-serif;font-weight:700;font-size:15px;
+    background:var(--rust);color:#fff;border:none;
+    padding:13px 24px;border-radius:12px;cursor:pointer;
+  }
+  .btn-primary:hover{background:var(--rust-dark);}
+  .btn-primary:disabled{background:#2A3550;color:#66748D;cursor:not-allowed;}
+  .btn-secondary{
+    font-family:'Inter',sans-serif;font-weight:700;font-size:15px;
+    background:var(--surface);color:var(--ink);border:1px solid var(--border);
+    padding:13px 24px;border-radius:12px;cursor:pointer;
+  }
+  .btn-full{width:100%;text-align:center;}
+
+  /* ---------------- MY INGREDIENTS ---------------- */
+  .ing-card{background:var(--cream-light);border:1px solid var(--border);border-radius:16px;padding:26px;}
+  .ing-card h2{font-size:23px;margin-bottom:6px;}
+  .ing-card>p{margin:0 0 18px;color:var(--muted);font-size:13.5px;}
+  .dropdown-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;position:relative;}
+  .dd{position:relative;flex:1;min-width:150px;border-radius:12px;}
+  .dd.open{border:2px solid var(--rust);z-index:31;}
+  .dd-btn{
+    width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;
+  }
+  .dd.open .dd-btn{border:1px solid transparent;border-radius:9px 9px 0 0;}
+  .dd-btn .count-badge{
+    background:var(--surface);color:var(--cat-color,var(--rust));font-size:11.5px;font-weight:800;
+    width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  }
+  .dd-btn.cat-filled{background:var(--cat-color,var(--rust));border-color:var(--cat-color,var(--rust));color:#fff;}
+  .dd-panel{
+    position:absolute;top:100%;left:-2px;right:-2px;z-index:30;
+    background:var(--surface);border:2px solid var(--rust);border-top:none;border-radius:0 0 11px 11px;
+    padding:8px;max-height:280px;overflow-y:auto;
+    scrollbar-width:none;-ms-overflow-style:none;
+  }
+  .dd-panel::-webkit-scrollbar{display:none;}
+  .dd-panel[hidden]{display:none;}
+  .dd-panel input{
+    width:100%;padding:11px 14px;border:none;border-radius:9px;background:var(--cream);
+    font-size:13.5px;margin-bottom:6px;color:var(--ink);
+  }
+  .dd-panel input:focus{outline:none;}
+  .dd-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:8px;cursor:pointer;font-size:14.5px;}
+  .dd-item:hover{background:var(--hover);}
+  .dd-item.selected{background:var(--cat-color-tint,var(--tan-bar));font-weight:600;color:var(--cat-color-dark,var(--rust-dark));}
+  .dd-item .check{color:var(--cat-color,var(--rust));font-weight:700;}
+
+  .chip-selected-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px;}
+  .sel-chip{
+    display:flex;align-items:center;gap:8px;background:var(--cat-color-tint);border:1px solid transparent;
+    color:var(--cat-color-dark);font-size:13px;font-weight:600;padding:6px 8px 6px 14px;border-radius:18px;
+  }
+  .sel-chip button{
+    border:none;background:var(--cat-color);color:#fff;cursor:pointer;font-size:10.5px;
+    width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;
+  }
+  .clear-all-btn{
+    background:var(--surface);border:1px solid var(--border);color:var(--muted);
+    font-size:13px;font-weight:600;padding:6px 14px;border-radius:18px;cursor:pointer;
+  }
+
+  .cta-bar{
+    width:100%;padding:14px;border-radius:12px;text-align:center;
+    font-weight:700;font-size:14.5px;background:var(--tan-bar);color:#66748D;border:none;
+  }
+
+  .find-status{margin-top:16px;}
+  .loading{display:flex;align-items:center;gap:10px;color:var(--rust-dark);font-size:13.5px;font-weight:600;}
+  .pot{width:15px;height:15px;border:2.5px solid var(--rust);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .error-box{
+    margin-top:14px;background:#3A1F1F;border:1px solid #5A2E2E;color:#E58B7C;
+    padding:13px 16px;border-radius:10px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  }
+  .sort-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin:22px 0 6px;}
+  .sort-row .count-line{margin:0;}
+  .sort-toggle{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px;gap:2px;}
+  .sort-toggle button{border:none;background:none;padding:7px 14px;border-radius:16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;}
+  .sort-toggle button.active{background:var(--tan-bar);color:var(--rust-dark);}
+  .group-divider{display:flex;align-items:center;gap:14px;margin:22px 0 14px;}
+  .group-divider::before,.group-divider::after{content:'';flex:1;border-top:1px solid var(--border);}
+  .group-divider span{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted);background:var(--tan-bar);padding:5px 14px;border-radius:12px;white-space:nowrap;}
+  .ing-progress-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:6px;}
+  .ing-progress-row b{color:var(--ink);}
+  .progress-track{height:8px;background:var(--tan-bar);border-radius:6px;overflow:hidden;margin-bottom:16px;}
+  .progress-fill{height:100%;background:var(--card-accent,var(--rust));border-radius:6px;}
+  .still-need-box{background:var(--card-tint,var(--tan-bar));border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+  .still-need-box .label{font-size:13px;font-weight:700;color:var(--card-accent,var(--rust));display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+  .still-need-box .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .need-chip{background:var(--cat-protein-tint);border:none;color:var(--rust-dark);font-size:12.5px;font-weight:600;padding:6px 13px;border-radius:14px;}
+  .find-instructions{display:none;margin:0 0 4px;padding-left:20px;font-size:14px;line-height:1.7;}
+  .find-instructions.show{display:block;}
+  .find-source{font-size:11px;color:var(--muted);font-style:italic;margin:2px 0 0;}
+  .cards{display:flex;flex-direction:column;gap:18px;}
+  .rcard{background:var(--surface);border:1px solid var(--border);border-left:5px solid var(--green);border-radius:6px 12px 12px 6px;padding:16px 18px;}
+  .rcard.missing{border-left-color:var(--rust);}
+  .rcard h3{font-size:18px;margin-bottom:4px;}
+  .rcard .desc{font-size:13px;color:var(--muted);margin:0 0 8px;}
+  .tagrow{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+  .tag-have{font-size:11.5px;background:var(--cat-vegetable-tint);color:var(--cat-vegetable);padding:4px 9px;border-radius:12px;}
+  .tag-need{font-size:11.5px;background:var(--cat-protein-tint);color:var(--cat-protein);padding:4px 9px;border-radius:12px;}
+  .toggle-steps{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;color:var(--rust-dark);background:none;border:none;cursor:pointer;padding:6px 0 0;}
+  .steps{margin:10px 0 0;padding-left:20px;font-size:13.5px;line-height:1.7;display:none;}
+  .steps.show{display:block;}
+  .source-line{font-size:11px;color:var(--muted);margin-top:8px;font-style:italic;}
+
+  /* ---------------- HISTORY ---------------- */
+  .empty-state{text-align:center;padding:60px 20px;}
+  .empty-icon{
+    width:64px;height:64px;border-radius:50%;background:var(--tan-bar);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:26px;
+  }
+  .empty-state h2{font-size:24px;margin-bottom:8px;}
+  .empty-state p{color:var(--muted);font-size:14px;margin:0 0 22px;}
+  .empty-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+  .hist-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 16px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:var(--surface);
+  }
+  .hist-left .hlabel{font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:2px;letter-spacing:.03em;}
+  .hist-actions{display:flex;gap:14px;}
+  .hist-actions button{background:none;border:none;cursor:pointer;font-size:12.5px;font-weight:700;color:var(--rust-dark);}
+  .hist-actions button.del{color:#E58B7C;}
+  .clear-row{display:flex;justify-content:flex-end;margin-bottom:14px;}
+  .clear-row button{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;}
+
+  /* ---------------- MODAL ---------------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(5,10,20,.65);z-index:100;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay[hidden]{display:none;}
+  .modal{
+    background:var(--surface);border-radius:18px;max-width:560px;width:100%;max-height:88vh;
+    overflow-y:auto;position:relative;
+  }
+  .modal-img{
+    height:120px;border-radius:18px 18px 0 0;position:relative;
+    display:flex;align-items:flex-end;padding:18px 22px;
+    background:linear-gradient(160deg, var(--thumb2,#8a4a24), var(--thumb1,#3d2413));
+  }
+  .modal-img::before{content:'';position:absolute;inset:0;border-radius:18px 18px 0 0;background:linear-gradient(to top, rgba(0,0,0,.6), transparent 55%);}
+  .modal-img .mtxt{position:relative;z-index:1;}
+  .modal-img h2{color:#fff;font-size:28px;}
+  .modal-img .fname{font-style:italic;color:#EADFC8;font-size:14px;}
+  .modal-close{
+    position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;
+    background:rgba(5,10,20,.65);color:#fff;border:none;cursor:pointer;font-size:16px;z-index:2;
+  }
+  .modal-body{padding:22px;}
+  .badge-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+  .b-easy{color:var(--green);font-weight:700;font-size:13.5px;}
+  .b-pill{background:var(--tan-bar);color:var(--rust-dark);font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:14px;}
+  .modal-body>.desc{font-size:14px;color:var(--muted);line-height:1.6;margin:0 0 20px;}
+  .ing-heading{display:flex;align-items:center;gap:8px;font-size:18px;margin-bottom:12px;}
+  .ing-table{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+  .ing-section-bar{background:var(--tan-bar);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.06em;padding:8px 14px;}
+  .ing-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--border);font-size:14px;}
+  .ing-row .dot{width:6px;height:6px;border-radius:50%;background:var(--rust);flex-shrink:0;}
+  .ing-row.have .dot{background:var(--green);}
+  .ing-row.have{color:var(--cat-vegetable);}
+  .instructions{margin:16px 0 0;padding-left:20px;font-size:14px;line-height:1.75;}
+
+  .checklist-panel{margin:20px 0 0;background:var(--tan-bar);border-radius:14px;padding:18px 18px 16px;}
+  .checklist-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .checklist-head h4{font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--gold);margin:0;display:flex;align-items:center;gap:6px;}
+  .checklist-reset{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;}
+  .checklist-progress-row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--muted);margin-bottom:8px;}
+  .checklist-progress-row b{color:var(--ink);}
+  .checklist-track{height:8px;background:var(--surface);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+  .checklist-fill{height:100%;background:var(--green);border-radius:6px;transition:width .25s ease;}
+  .check-step{display:flex;align-items:flex-start;gap:11px;padding:9px 4px;cursor:pointer;border-radius:8px;}
+  .check-step:hover{background:rgba(255,255,255,.03);}
+  .check-step .box{
+    flex-shrink:0;width:20px;height:20px;border-radius:6px;border:2px solid var(--muted);
+    display:flex;align-items:center;justify-content:center;margin-top:1px;font-size:12px;color:transparent;
+  }
+  .check-step.done .box{background:var(--green);border-color:var(--green);color:#0B1220;font-weight:800;}
+  .check-step .stxt{font-size:14px;line-height:1.6;color:var(--ink);}
+  .check-step.done .stxt{color:var(--muted);text-decoration:line-through;}
+  .checklist-done-msg{display:flex;align-items:center;gap:8px;color:var(--green);font-size:13.5px;font-weight:700;margin-top:10px;padding-top:12px;border-top:1px solid var(--border);}
+  .cta-fixed{padding:16px 22px 22px;position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);}
+  .cta-fixed .btn-primary{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;}
+
+  @media(max-width:640px){
+    .hero h1{font-size:38px;}
+    .panel{padding:20px;}
+    .dropdown-row{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="badge"><span class="flag">PH</span> FILIPINO KITCHEN</span>
+      <h1>Ulam <em>Finder</em></h1>
+      <p>Pick your ingredients &middot; discover Filipino recipes &middot; never wonder what to cook again</p>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="active" data-tab="browse"><span class="ic">🍲</span> Browse Viands</button>
+    <button data-tab="ingredients"><span class="ic">🌿</span> My Ingredients</button>
+    <button data-tab="history"><span class="ic">📋</span> History</button>
+  </div>
+
+  <!-- BROWSE VIANDS -->
+  <div class="panel" id="panel-browse">
+    <div class="panel-head">
+      <h2>Browse Filipino Viands</h2>
+      <p>Discover ulam ideas and get the full recipe.</p>
+    </div>
+    <div class="search-bar">
+      <span class="icn">🔍</span>
+      <input type="text" id="browseSearch" placeholder="Search by name, flavour, or ingredient...">
+    </div>
+    <div class="chip-row" id="filterChips"></div>
+    <div class="count-line" id="countLine"></div>
+    <div class="grid" id="viandGrid"></div>
+    <div class="no-match" id="noMatch" hidden></div>
+  </div>
+
+  <!-- MY INGREDIENTS -->
+  <div class="panel" id="panel-ingredients" hidden>
+    <div class="ing-card">
+      <h2>What's in your kitchen?</h2>
+      <p>Select ingredients you have on hand. Salt, pepper, oil, and rice are assumed available.</p>
+      <div class="dropdown-row" id="ddRow"></div>
+      <div class="chip-selected-row" id="selChipRow"></div>
+      <button class="cta-bar" id="findBtn" disabled>Select at least one ingredient to begin</button>
+      <div class="find-status" id="findStatus"></div>
+      <div class="cards" id="findResults"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="panel" id="panel-history" hidden>
+    <div id="historyContent"></div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<div class="modal-overlay" id="checklistOverlay" hidden>
+  <div class="modal" id="checklistBox"></div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+const CATS = ["Stew","Soup","Beef","Pork","Chicken","Seafood","Vegetable"];
+
+const INGREDIENT_GROUPS = {
+  "Protein": ["Chicken","Pork","Beef","Pork Belly","Ground Pork","Ground Beef","Bacon","Hotdog","Tocino","Longganisa","Corned Beef","Tilapia","Bangus","Galunggong","Shrimp","Squid","Crab","Egg","Tofu"],
+  "Vegetable": ["Kangkong","Sitaw (String Beans)","Kalabasa (Squash)","Ampalaya (Bitter Gourd)","Sayote (Chayote)","Cabbage","Carrots","Potato","Eggplant","Okra","Malunggay","Tomato","Bell Pepper","Corn","Taro Leaves (Dahon ng Gabi)","Sweet Potato (Kamote)","Radish"],
+  "Pantry": ["Soy Sauce","Vinegar","Fish Sauce (Patis)","Shrimp Paste (Bagoong)","Oyster Sauce","Coconut Milk (Gata)","Tomato Sauce","Banana Ketchup","Tamarind (Sampalok)","Peanut Butter","Curry Powder","Mung Beans (Monggo)","Rice Noodles (Bihon)"],
+  "Aromatics": ["Onion","Garlic","Ginger","Green Onion","Siling Haba (Long Chili)","Bay Leaf (Laurel)","Calamansi","Lemongrass"]
+};
+
+const VIANDS = [
+  {id:1,name:"Chicken Adobo",fname:"Adobong Manok",cats:["Chicken","Stew"],diff:"Easy",time:"50 min",serv:"4 servings",desc:"The quintessential Filipino stew — chicken braised in soy sauce, vinegar, and aromatics until deeply savory and fall-off-the-bone tender.",ing:["Chicken","Soy Sauce","Vinegar","Garlic","Bay Leaf (Laurel)","Onion"],c1:"#3d2413",c2:"#8a4a24"},
+  {id:2,name:"Pork Adobo",fname:"Adobong Baboy",cats:["Pork","Stew"],diff:"Easy",time:"60 min",serv:"4 servings",desc:"Pork belly slow-braised in the same vinegar-soy marinade, rendered rich and glossy.",ing:["Pork Belly","Soy Sauce","Vinegar","Garlic","Bay Leaf (Laurel)","Onion"],c1:"#402314",c2:"#95511f"},
+  {id:3,name:"Sinigang na Baboy",fname:"Sour Pork Soup",cats:["Pork","Soup"],diff:"Easy",time:"70 min",serv:"6 servings",desc:"A comforting sour tamarind soup loaded with pork and vegetables.",ing:["Pork Belly","Tamarind (Sampalok)","Tomato","Onion","Sitaw (String Beans)","Kangkong","Radish"],c1:"#33210f","c2":"#a15a24"},
+  {id:4,name:"Sinigang na Hipon",fname:"Sour Shrimp Soup",cats:["Seafood","Soup"],diff:"Easy",time:"40 min",serv:"4 servings",desc:"A lighter, quicker take on sinigang using shrimp for a sweet-sour broth.",ing:["Shrimp","Tamarind (Sampalok)","Tomato","Onion","Kangkong","Sitaw (String Beans)"],c1:"#2c2410",c2:"#a4762a"},
+  {id:5,name:"Kare-Kare",fname:"Peanut Beef Stew",cats:["Beef","Stew"],diff:"Medium",time:"120 min",serv:"6 servings",desc:"Beef simmered low and slow in a thick, nutty peanut sauce, served with a side of shrimp paste.",ing:["Beef","Peanut Butter","Eggplant","Sitaw (String Beans)","Shrimp Paste (Bagoong)"],c1:"#382312",c2:"#8f5626"},
+  {id:6,name:"Beef Caldereta",fname:"Kalderetang Baka",cats:["Beef","Stew"],diff:"Medium",time:"90 min",serv:"6 servings",desc:"A hearty tomato-based beef stew with potatoes, carrots, and bell peppers.",ing:["Beef","Tomato Sauce","Potato","Carrots","Bell Pepper"],c1:"#3a190f",c2:"#a1442a"},
+  {id:7,name:"Chicken Tinola",fname:"Tinolang Manok",cats:["Chicken","Soup"],diff:"Easy",time:"45 min",serv:"4 servings",desc:"A warm, gingery chicken soup with sayote and malunggay leaves.",ing:["Chicken","Ginger","Sayote (Chayote)","Malunggay","Fish Sauce (Patis)"],c1:"#2c2712",c2:"#8c8138"},
+  {id:8,name:"Bicol Express",fname:"Spicy Coconut Pork",cats:["Pork","Stew"],diff:"Medium",time:"45 min",serv:"4 servings",desc:"Pork simmered in coconut milk with shrimp paste and plenty of chili for a rich, spicy kick.",ing:["Pork Belly","Coconut Milk (Gata)","Shrimp Paste (Bagoong)","Siling Haba (Long Chili)","Onion","Garlic"],c1:"#331c10",c2:"#8c4522"},
+  {id:9,name:"Chicken Curry",fname:"Filipino-style Curry",cats:["Chicken","Stew"],diff:"Easy",time:"50 min",serv:"4 servings",desc:"A milder, coconut-based curry with potatoes, carrots, and bell peppers.",ing:["Chicken","Coconut Milk (Gata)","Potato","Carrots","Bell Pepper","Curry Powder"],c1:"#2f210f",c2:"#a17a2c"},
+  {id:10,name:"Beef Nilaga",fname:"Boiled Beef Soup",cats:["Beef","Soup"],diff:"Easy",time:"90 min",serv:"6 servings",desc:"A clear, comforting broth of slow-boiled beef, cabbage, potatoes, and corn.",ing:["Beef","Cabbage","Potato","Corn","Onion"],c1:"#2a2010",c2:"#7a6430"},
+  {id:11,name:"Pork Menudo",fname:"Menudo",cats:["Pork","Stew"],diff:"Medium",time:"60 min",serv:"6 servings",desc:"Diced pork stewed in tomato sauce with potatoes, carrots, and bell peppers.",ing:["Pork","Tomato Sauce","Potato","Carrots","Bell Pepper"],c1:"#3a190f",c2:"#9c4022"},
+  {id:12,name:"Chicken Afritada",fname:"Afritadang Manok",cats:["Chicken","Stew"],diff:"Easy",time:"50 min",serv:"4 servings",desc:"Chicken braised in tomato sauce with potatoes, carrots, and bell peppers — a milder cousin of caldereta.",ing:["Chicken","Tomato Sauce","Potato","Carrots","Bell Pepper"],c1:"#331e0f",c2:"#9e4c26"},
+  {id:13,name:"Ginataang Gulay",fname:"Vegetables in Coconut Milk",cats:["Vegetable","Stew"],diff:"Easy",time:"30 min",serv:"4 servings",desc:"Squash and string beans simmered in creamy coconut milk with shrimp paste.",ing:["Kalabasa (Squash)","Sitaw (String Beans)","Coconut Milk (Gata)","Shrimp Paste (Bagoong)"],c1:"#233318",c2:"#4d7c3a"},
+  {id:14,name:"Laing",fname:"Taro Leaves in Coconut Milk",cats:["Vegetable","Stew"],diff:"Medium",time:"60 min",serv:"4 servings",desc:"Taro leaves slow-cooked in coconut milk with shrimp paste and chili until rich and creamy.",ing:["Taro Leaves (Dahon ng Gabi)","Coconut Milk (Gata)","Shrimp Paste (Bagoong)","Siling Haba (Long Chili)"],c1:"#20301a",c2:"#557c3f"},
+  {id:15,name:"Pinakbet",fname:"Vegetable Medley",cats:["Vegetable","Stew"],diff:"Easy",time:"40 min",serv:"4 servings",desc:"A colorful native-vegetable stew with squash, okra, and eggplant flavored with shrimp paste.",ing:["Kalabasa (Squash)","Sitaw (String Beans)","Ampalaya (Bitter Gourd)","Okra","Shrimp Paste (Bagoong)","Tomato"],c1:"#252f14",c2:"#6d7c2f"},
+  {id:16,name:"Grilled Bangus",fname:"Inihaw na Bangus",cats:["Seafood"],diff:"Easy",time:"25 min",serv:"2 servings",desc:"Milkfish marinated in calamansi and soy sauce, then grilled until smoky and slightly charred.",ing:["Bangus","Calamansi","Soy Sauce","Onion","Tomato"],c1:"#2c2410",c2:"#8a762a"},
+  {id:17,name:"Ginisang Monggo",fname:"Sauteed Mung Beans",cats:["Pork","Soup","Vegetable"],diff:"Easy",time:"45 min",serv:"4 servings",desc:"A homey mung bean stew with pork and malunggay leaves in a light tomato broth.",ing:["Mung Beans (Monggo)","Pork","Malunggay","Tomato","Onion","Garlic"],c1:"#232a14",c2:"#68702f"},
+  {id:18,name:"Crispy Pata",fname:"Deep-fried Pork Leg",cats:["Pork"],diff:"Medium",time:"90 min",serv:"4 servings",desc:"Pork leg boiled with aromatics until tender, then deep-fried to a shattering crackle.",ing:["Pork Belly","Garlic","Bay Leaf (Laurel)","Soy Sauce","Vinegar"],c1:"#3a2413",c2:"#a2691f"},
+  {id:19,name:"Chopsuey",fname:"Mixed Vegetables",cats:["Vegetable","Seafood","Stew"],diff:"Easy",time:"30 min",serv:"4 servings",desc:"A quick stir-fry of crisp vegetables and shrimp in a light oyster sauce glaze.",ing:["Cabbage","Carrots","Bell Pepper","Shrimp","Oyster Sauce"],c1:"#1f2f1c",c2:"#4c7a3e"},
+  {id:20,name:"Sinigang na Baka",fname:"Sour Beef Soup",cats:["Beef","Soup"],diff:"Medium",time:"110 min",serv:"6 servings",desc:"A deeply savory sinigang made with beef short ribs simmered until tender.",ing:["Beef","Tamarind (Sampalok)","Tomato","Onion","Sitaw (String Beans)","Kangkong"],c1:"#31200f",c2:"#9c5b26"}
+];
+
+let selectedIngredients = [];
+let history = [];
+let activeChip = "All";
+let searchQuery = "";
+let activeTab = "browse";
+let recipeCache = {}; // { [viandId]: {instructions:string[], source:string, cachedAt:number} }
+let stepProgress = {}; // { [viandId]: boolean[] } - which checklist steps are checked
+
+/* ================= STORAGE ================= */
+async function loadState(){
+  try{ const r = localStorage.getItem('ulam-history'); history = r ? JSON.parse(r) : []; }catch(e){ history = []; }
+  try{ const r = localStorage.getItem('ulam-selected-ingredients'); selectedIngredients = r ? JSON.parse(r) : []; }catch(e){ selectedIngredients = []; }
+  try{ const r = localStorage.getItem('ulam-recipe-cache'); recipeCache = r ? JSON.parse(r) : {}; }catch(e){ recipeCache = {}; }
+  try{ const r = localStorage.getItem('ulam-step-progress'); stepProgress = r ? JSON.parse(r) : {}; }catch(e){ stepProgress = {}; }
+}
+async function saveHistory(){ try{ localStorage.setItem('ulam-history', JSON.stringify(history)); }catch(e){} }
+async function saveSelected(){ try{ localStorage.setItem('ulam-selected-ingredients', JSON.stringify(selectedIngredients)); }catch(e){} }
+async function saveRecipeCache(){ try{ localStorage.setItem('ulam-recipe-cache', JSON.stringify(recipeCache)); }catch(e){} }
+async function saveStepProgress(){ try{ localStorage.setItem('ulam-step-progress', JSON.stringify(stepProgress)); }catch(e){} }
+async function addHistory(entry){
+  history.unshift({...entry, ts: Date.now()});
+  history = history.slice(0,40);
+  await saveHistory();
+}
+
+/* ================= NAV ================= */
+document.querySelectorAll('.nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+});
+function switchTab(tab){
+  activeTab = tab;
+  document.querySelectorAll('.nav button').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('panel-browse').hidden = tab!=='browse';
+  document.getElementById('panel-ingredients').hidden = tab!=='ingredients';
+  document.getElementById('panel-history').hidden = tab!=='history';
+  if(tab==='history') renderHistory();
+}
+
+/* ================= BROWSE VIANDS ================= */
+function renderChips(){
+  const row = document.getElementById('filterChips');
+  const chips = ["All", ...CATS];
+  row.innerHTML = chips.map(c=>`<button class="fchip ${c===activeChip?'active':''}" data-chip="${c}">${c}</button>`).join('');
+}
+document.getElementById('filterChips').addEventListener('click', e=>{
+  const b = e.target.closest('.fchip'); if(!b) return;
+  activeChip = b.dataset.chip; renderChips(); renderGrid();
+});
+document.getElementById('browseSearch').addEventListener('input', e=>{
+  searchQuery = e.target.value.trim().toLowerCase(); renderGrid();
+});
+
+function filteredViands(){
+  return VIANDS.filter(v=>{
+    const chipOk = activeChip==='All' || v.cats.includes(activeChip);
+    if(!chipOk) return false;
+    if(!searchQuery) return true;
+    const hay = (v.name+' '+v.fname+' '+v.ing.join(' ')).toLowerCase();
+    return hay.includes(searchQuery);
+  });
+}
+
+function renderGrid(){
+  const list = filteredViands();
+  document.getElementById('countLine').innerHTML = `<b>${list.length}</b> viands`;
+  const grid = document.getElementById('viandGrid');
+  const noMatch = document.getElementById('noMatch');
+  if(list.length===0){
+    grid.innerHTML='';
+    noMatch.hidden=false;
+    noMatch.innerHTML = searchQuery
+      ? `No viand in our list matches "${searchQuery}".<br><button class="btn-secondary" id="webSearchBtn">Ask for a "${searchQuery}" recipe</button>`
+      : `No viands match this filter.`;
+    if(searchQuery) document.getElementById('webSearchBtn').addEventListener('click', ()=> webSearchDish(searchQuery));
+  } else {
+    noMatch.hidden=true;
+    grid.innerHTML = list.map(v=>{
+      const status = ingredientStatus(v.ing);
+      const fullMatch = selectedIngredients.length>0 && status.every(s=>s.have);
+      const accent = fullMatch ? 'var(--cat-vegetable)' : 'var(--rust)';
+      const tint = fullMatch ? 'var(--cat-vegetable-tint)' : 'var(--tan-bar)';
+      return `
+      <div class="vcard" data-id="${v.id}" style="--card-accent:${accent};--card-tint:${tint};">
+        <div class="vcard-top">
+          <div>
+            <h3>${v.name}</h3>
+            <span class="fname">${v.fname}</span>
+          </div>
+          <div class="vcard-badges">
+            <span class="b-easy">${v.diff}</span>
+            <span class="mini-badge">${v.cats[0]}</span>
+            ${recipeCache[v.id] ? `<span class="mini-badge" style="color:var(--cat-vegetable);">💾 Saved</span>` : ''}
+          </div>
+        </div>
+        <p class="desc">${v.desc}</p>
+        <div class="meta">
+          <span>⏱ ${v.time}</span>
+          <span>👥 ${v.serv}</span>
+        </div>
+        <button class="view-btn" data-open="${v.id}">View full recipe →</button>
+      </div>
+    `;
+    }).join('');
+  }
+}
+document.getElementById('viandGrid').addEventListener('click', e=>{
+  const card = e.target.closest('.vcard'); if(!card) return;
+  const v = VIANDS.find(x=>x.id==card.dataset.id);
+  openModal(v);
+});
+
+/* ================= MODAL ================= */
+function ingredientStatus(list){
+  return list.map(i => ({name:i, have: selectedIngredients.includes(i)}));
+}
+function openModal(v){
+  const overlay = document.getElementById('modalOverlay');
+  const box = document.getElementById('modalBox');
+  const status = ingredientStatus(v.ing);
+  const anySelected = selectedIngredients.length > 0;
+  box.style.setProperty('--thumb1', v.c1);
+  box.style.setProperty('--thumb2', v.c2);
+  box.innerHTML = `
+    <div class="modal-img" style="--thumb1:${v.c1};--thumb2:${v.c2}">
+      <button class="modal-close" id="modalCloseBtn">✕</button>
+      <div class="mtxt"><h2>${v.name}</h2><div class="fname">${v.fname}</div></div>
+    </div>
+    <div class="modal-body">
+      <div class="badge-row">
+        <span class="b-easy">${v.diff}</span>
+        <span class="b-pill">⏱ ${v.time}</span>
+        <span class="b-pill">👥 ${v.serv}</span>
+        <span class="b-pill">${v.cats[0]}</span>
+      </div>
+      <p class="desc">${v.desc}</p>
+      <div class="ing-heading">🍴 Ingredients</div>
+      <div class="ing-table">
+        ${anySelected ? `
+          <div class="ing-section-bar">YOU HAVE</div>
+          ${status.filter(s=>s.have).map(s=>`<div class="ing-row have"><span class="dot"></span>${s.name}</div>`).join('') || '<div class="ing-row">None yet</div>'}
+          <div class="ing-section-bar">STILL NEED</div>
+          ${status.filter(s=>!s.have).map(s=>`<div class="ing-row"><span class="dot"></span>${s.name}</div>`).join('') || '<div class="ing-row have"><span class="dot"></span>You have everything!</div>'}
+        ` : `
+          <div class="ing-section-bar">REQUIRED</div>
+          ${status.map(s=>`<div class="ing-row"><span class="dot"></span>${s.name}</div>`).join('')}
+        `}
+      </div>
+      <div id="instructionsWrap"></div>
+    </div>
+    <div class="cta-fixed">
+      <button class="btn-primary" id="cookBtn">🍳 Start Cooking</button>
+    </div>
+  `;
+  overlay.hidden = false;
+  document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+  document.getElementById('cookBtn').addEventListener('click', ()=> fetchInstructions(v));
+}
+function closeModal(){ document.getElementById('modalOverlay').hidden = true; }
+document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target.id==='modalOverlay') closeModal(); });
+
+// Jumps straight into the checklist overlay for a dish's instructions (from cache or a fresh fetch).
+function goToChecklist(v, instructions, source){
+  // Ensure a progress array matching the instruction count exists for this dish.
+  let checks = stepProgress[v.id];
+  if(!checks || checks.length !== instructions.length){
+    checks = instructions.map(()=>false);
+    stepProgress[v.id] = checks;
+  }
+  openChecklistOverlay(v, instructions, source);
+}
+
+/* ================= CHECKLIST OVERLAY ================= */
+function openChecklistOverlay(v, instructions, source){
+  closeModal(); // close the recipe modal first
+  renderChecklistOverlay(v, instructions, source);
+  document.getElementById('checklistOverlay').hidden = false;
+}
+function closeChecklistOverlay(){ document.getElementById('checklistOverlay').hidden = true; }
+document.getElementById('checklistOverlay').addEventListener('click', e=>{ if(e.target.id==='checklistOverlay') closeChecklistOverlay(); });
+
+function renderChecklistOverlay(v, instructions, source){
+  const box = document.getElementById('checklistBox');
+  if(!box) return;
+
+  let checks = stepProgress[v.id];
+  if(!checks || checks.length !== instructions.length){
+    checks = instructions.map(()=>false);
+    stepProgress[v.id] = checks;
+  }
+  const doneCount = checks.filter(Boolean).length;
+  const total = instructions.length;
+  const pct = total>0 ? Math.round((doneCount/total)*100) : 0;
+  const allDone = total>0 && doneCount===total;
+
+  box.innerHTML = `
+    <div class="modal-img" style="--thumb1:${v.c1};--thumb2:${v.c2}">
+      <button class="modal-close" id="checklistCloseBtn">✕</button>
+      <div class="mtxt"><h2>${v.name}</h2><div class="fname">${v.fname} &middot; Cooking Checklist</div></div>
+    </div>
+    <div class="modal-body">
+      <div class="checklist-panel" style="margin-top:0;">
+        <div class="checklist-head">
+          <h4>✅ Cooking Checklist</h4>
+          <button class="checklist-reset" id="resetChecklistBtn">Reset</button>
+        </div>
+        <div class="checklist-progress-row"><span>Steps completed</span><b>${doneCount}/${total}</b></div>
+        <div class="checklist-track"><div class="checklist-fill" style="width:${pct}%;"></div></div>
+        ${instructions.map((s,i)=>`
+          <div class="check-step ${checks[i]?'done':''}" data-step="${i}">
+            <span class="box">✓</span>
+            <span class="stxt">${s}</span>
+          </div>
+        `).join('')}
+        ${allDone ? `<div class="checklist-done-msg">🎉 All steps done — enjoy your ${v.name}!</div>` : ''}
+      </div>
+    </div>
+    <div class="cta-fixed">
+      <button class="btn-primary" id="completeChecklistBtn">${allDone ? '🎉 Complete' : '✓ Complete'}</button>
+    </div>
+  `;
+
+  document.getElementById('checklistCloseBtn').addEventListener('click', closeChecklistOverlay);
+
+  box.querySelectorAll('.check-step').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const idx = parseInt(el.dataset.step, 10);
+      stepProgress[v.id][idx] = !stepProgress[v.id][idx];
+      await saveStepProgress();
+      renderChecklistOverlay(v, instructions, source);
+    });
+  });
+
+  document.getElementById('resetChecklistBtn').addEventListener('click', async ()=>{
+    stepProgress[v.id] = instructions.map(()=>false);
+    await saveStepProgress();
+    renderChecklistOverlay(v, instructions, source);
+  });
+
+  document.getElementById('completeChecklistBtn').addEventListener('click', async ()=>{
+    // Mark every step done, log the cook as completed, then close the overlay.
+    stepProgress[v.id] = instructions.map(()=>true);
+    await saveStepProgress();
+    await addHistory({type:'cooked', name:v.name, fname:v.fname});
+    closeChecklistOverlay();
+  });
+}
+
+async function callClaude(prompt){
+  let data;
+  if(window.electronAPI && window.electronAPI.callClaude){
+    // Running inside the Electron app: the real API call happens in the
+    // main process, where the API key lives. This renderer never sees the key.
+    data = await window.electronAPI.callClaude(prompt);
+  } else {
+    // This app now calls the Gemini API from the Electron main process only.
+    // There's no key available here for a plain-browser preview.
+    throw new Error("This app needs to run inside the Electron shell (npm start) — no API access in a plain browser preview.");
+  }
+  if(data.error) throw new Error(data.error.message || "API returned an error");
+  const candidate = data.candidates && data.candidates[0];
+  const text = candidate && candidate.content && candidate.content.parts
+    ? candidate.content.parts.map(p=>p.text||'').join('\n')
+    : '';
+  const clean = text.replace(/```json/gi,'').replace(/```/g,'').trim();
+  const s = clean.indexOf('{'), e = clean.lastIndexOf('}');
+  if(s===-1||e===-1) throw new Error("No JSON in response");
+  return JSON.parse(clean.slice(s,e+1));
+}
+
+async function fetchInstructions(v, forceRefresh=false){
+  const wrap = document.getElementById('instructionsWrap');
+  const cookBtn = document.getElementById('cookBtn');
+
+  // Serve from the local database/cache when available — skips the API call entirely.
+  if(!forceRefresh && recipeCache[v.id]){
+    const cached = recipeCache[v.id];
+    goToChecklist(v, cached.instructions||[], cached.source);
+    await addHistory({type:'viand', name:v.name, fname:v.fname});
+    return;
+  }
+
+  cookBtn.disabled = true;
+  wrap.innerHTML = `<div class="loading" style="margin-top:16px;"><span class="pot"></span> ${forceRefresh ? 'Refreshing' : 'Finding'} the full recipe...</div>`;
+  try{
+    const prompt = `Using your knowledge of traditional Filipino home cooking, give a real recipe for "${v.name}" (${v.fname}). Assume salt, pepper, oil, sugar, and rice are always available.
+Respond with ONLY valid JSON, no markdown fences, no preamble: {"instructions":string[] (5-8 concise steps),"source":string}. Be concise.`;
+    const data = await callClaude(prompt);
+
+    // Save to the local recipe database so we never need to call the API again for this dish.
+    recipeCache[v.id] = { instructions: data.instructions || [], source: data.source || 'Traditional Filipino recipe', cachedAt: Date.now() };
+    await saveRecipeCache();
+
+    // A fresh/refreshed recipe resets the checklist since the steps may have changed.
+    stepProgress[v.id] = (data.instructions||[]).map(()=>false);
+    await saveStepProgress();
+
+    wrap.innerHTML = '';
+    goToChecklist(v, data.instructions||[], data.source);
+    await addHistory({type:'viand', name:v.name, fname:v.fname});
+  }catch(err){
+    wrap.innerHTML = `<div class="error-box"><span>Couldn't fetch the recipe right now. (${err.message})</span><button class="btn-secondary" id="retryCook">Retry</button></div>`;
+    document.getElementById('retryCook')?.addEventListener('click', ()=> fetchInstructions(v, forceRefresh));
+  }finally{
+    cookBtn.disabled = false;
+  }
+}
+
+async function webSearchDish(query){
+  const grid = document.getElementById('viandGrid');
+  const noMatch = document.getElementById('noMatch');
+  noMatch.innerHTML = `<div class="loading"><span class="pot"></span> Searching the web for "${query}"...</div>`;
+  try{
+    const prompt = `Using your knowledge of traditional Filipino home cooking, give the real recipe for the Filipino dish: "${query}". Assume salt, pepper, oil, sugar, and rice are always available.
+Respond with ONLY valid JSON, no markdown, no preamble: {"name":string,"fname":string (Filipino/Tagalog name if applicable, else repeat name),"description":string (max 20 words),"ingredients":string[] (main ingredients, excluding staples),"instructions":string[] (5-8 steps),"source":string}. Be concise.`;
+    const data = await callClaude(prompt);
+    noMatch.innerHTML = '';
+    const status = ingredientStatus(data.ingredients||[]);
+    grid.innerHTML = `
+      <div class="rcard" style="grid-column:1/-1;">
+        <h3>${data.name}</h3>
+        <p class="desc"><em>${data.fname}</em> &middot; ${data.description||''}</p>
+        <div class="tagrow">
+          ${status.map(s=> s.have ? `<span class="tag-have">✓ ${s.name}</span>` : `<span class="tag-need">+ ${s.name}</span>`).join('')}
+        </div>
+        <button class="toggle-steps" data-steps="web">View instructions ▾</button>
+        <ol class="steps" id="steps-web">${(data.instructions||[]).map(s=>`<li>${s}</li>`).join('')}</ol>
+        <p class="source-line">Source: ${data.source||'Web search'}</p>
+      </div>`;
+    await addHistory({type:'dish', name:data.name, query});
+  }catch(err){
+    noMatch.innerHTML = `<div class="error-box"><span>Search failed. (${err.message})</span><button class="btn-secondary" id="retryWeb">Retry</button></div>`;
+    document.getElementById('retryWeb')?.addEventListener('click', ()=> webSearchDish(query));
+  }
+}
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-steps]'); if(!t) return;
+  const el = document.getElementById('steps-'+t.dataset.steps);
+  el.classList.toggle('show');
+  t.textContent = el.classList.contains('show') ? 'Hide instructions ▴' : 'View instructions ▾';
+});
+
+/* ================= MY INGREDIENTS ================= */
+const CAT_COLORS = {
+  "Protein":   {c:'var(--cat-protein)',   d:'var(--cat-protein-dark)',   t:'var(--cat-protein-tint)'},
+  "Vegetable": {c:'var(--cat-vegetable)', d:'var(--cat-vegetable-dark)', t:'var(--cat-vegetable-tint)'},
+  "Pantry":    {c:'var(--cat-pantry)',    d:'var(--cat-pantry-dark)',    t:'var(--cat-pantry-tint)'},
+  "Aromatics": {c:'var(--cat-aromatics)', d:'var(--cat-aromatics-dark)', t:'var(--cat-aromatics-tint)'}
+};
+const INGREDIENT_TO_GROUP = {};
+Object.entries(INGREDIENT_GROUPS).forEach(([group, items])=> items.forEach(i=> INGREDIENT_TO_GROUP[i]=group));
+
+function renderDropdowns(){
+  const row = document.getElementById('ddRow');
+  row.innerHTML = Object.keys(INGREDIENT_GROUPS).map(group=>{
+    const count = INGREDIENT_GROUPS[group].filter(i=>selectedIngredients.includes(i)).length;
+    const col = CAT_COLORS[group];
+    const style = `--cat-color:${col.c};--cat-color-dark:${col.d};--cat-color-tint:${col.t};`;
+    return `
+    <div class="dd" data-group="${group}" style="${style}">
+      <button class="dd-btn ${count>0?'cat-filled':''}">
+        <span>${group}</span>
+        <span style="display:flex;align-items:center;gap:8px;">${count>0?`<span class="count-badge">${count}</span>`:''}<span class="chev">▾</span></span>
+      </button>
+      <div class="dd-panel" hidden>
+        <input type="text" placeholder="Search ${group.toLowerCase()}...">
+        <div class="dd-list"></div>
+      </div>
+    </div>`;
+  }).join('');
+  row.querySelectorAll('.dd').forEach(dd=>{
+    const group = dd.dataset.group;
+    const btn = dd.querySelector('.dd-btn');
+    const panel = dd.querySelector('.dd-panel');
+    const search = dd.querySelector('input');
+    const list = dd.querySelector('.dd-list');
+    function renderList(filter=''){
+      const items = INGREDIENT_GROUPS[group].filter(i=>i.toLowerCase().includes(filter.toLowerCase()));
+      list.innerHTML = items.map(i=>{
+        const sel = selectedIngredients.includes(i);
+        return `<div class="dd-item ${sel?'selected':''}" data-ing="${i}"><span>${i}</span>${sel?'<span class="check">✓</span>':''}</div>`;
+      }).join('') || '<div style="padding:8px;font-size:13px;color:var(--muted);">No matches</div>';
+    }
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const isHidden = panel.hidden;
+      document.querySelectorAll('.dd-panel').forEach(p=>p.hidden=true);
+      document.querySelectorAll('.dd').forEach(d=>d.classList.remove('open'));
+      panel.hidden = !isHidden;
+      dd.classList.toggle('open', !panel.hidden);
+      btn.querySelector('.chev').textContent = panel.hidden ? '▾' : '▴';
+      if(!panel.hidden){ renderList(); search.value=''; search.focus(); }
+    });
+    search.addEventListener('input', ()=> renderList(search.value));
+    list.addEventListener('click', async (e)=>{
+      const item = e.target.closest('[data-ing]'); if(!item) return;
+      const name = item.dataset.ing;
+      if(selectedIngredients.includes(name)) selectedIngredients = selectedIngredients.filter(x=>x!==name);
+      else selectedIngredients.push(name);
+      await saveSelected();
+      renderList(search.value);
+      renderDropdownButtonState();
+      renderSelChips();
+      updateCta();
+    });
+  });
+  document.addEventListener('click', ()=>{
+    document.querySelectorAll('.dd-panel').forEach(p=>p.hidden=true);
+    document.querySelectorAll('.dd').forEach(d=>d.classList.remove('open'));
+  });
+}
+function renderDropdownButtonState(){
+  document.querySelectorAll('.dd').forEach(dd=>{
+    const group = dd.dataset.group;
+    const count = INGREDIENT_GROUPS[group].filter(i=>selectedIngredients.includes(i)).length;
+    const btn = dd.querySelector('.dd-btn');
+    btn.classList.toggle('cat-filled', count>0);
+    const badgeSpan = btn.querySelector('.count-badge');
+    if(count>0){
+      if(badgeSpan) badgeSpan.textContent = count;
+      else btn.querySelector('.chev').insertAdjacentHTML('beforebegin', `<span class="count-badge">${count}</span>`);
+    } else if(badgeSpan){ badgeSpan.remove(); }
+  });
+}
+function renderSelChips(){
+  const row = document.getElementById('selChipRow');
+  if(selectedIngredients.length===0){ row.innerHTML=''; return; }
+  row.innerHTML = selectedIngredients.map(i=>{
+    const group = INGREDIENT_TO_GROUP[i] || 'Pantry';
+    const col = CAT_COLORS[group];
+    const style = `--cat-color:${col.c};--cat-color-dark:${col.d};--cat-color-tint:${col.t};`;
+    return `<span class="sel-chip" style="${style}">${i}<button data-remove="${i}">✕</button></span>`;
+  }).join('') + `<button class="clear-all-btn" id="clearAllBtn">Clear all</button>`;
+}
+document.getElementById('selChipRow').addEventListener('click', async e=>{
+  const clearBtn = e.target.closest('#clearAllBtn');
+  const removeBtn = e.target.closest('[data-remove]');
+  if(clearBtn){ selectedIngredients = []; }
+  else if(removeBtn){ selectedIngredients = selectedIngredients.filter(x=>x!==removeBtn.dataset.remove); }
+  else return;
+  await saveSelected();
+  renderDropdowns(); renderSelChips(); updateCta();
+});
+function updateCta(){
+  const btn = document.getElementById('findBtn');
+  if(selectedIngredients.length===0){
+    btn.disabled = true; btn.textContent = 'Select at least one ingredient to begin';
+    btn.classList.remove('btn-primary'); btn.classList.add('cta-bar');
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = `🔍 Find recipes with ${selectedIngredients.length} ingredient${selectedIngredients.length>1?'s':''}`;
+    btn.classList.remove('cta-bar'); btn.classList.add('btn-primary');
+  }
+}
+document.getElementById('findBtn').addEventListener('click', runFind);
+
+let lastFindResults = [];
+let findSortMode = 'best';
+
+function parseMinutes(t){
+  const m = (t||'').match(/\d+/);
+  return m ? parseInt(m[0],10) : 9999;
+}
+
+function renderFindResults(){
+  const resultsEl = document.getElementById('findResults');
+  if(!lastFindResults.length){ resultsEl.innerHTML=''; return; }
+
+  const enriched = lastFindResults.map(r=>({
+    ...r,
+    total: r.matched_ingredients.length + r.missing_ingredients.length,
+    missingCount: r.missing_ingredients.length
+  }));
+
+  const toolbar = `
+    <div class="sort-row">
+      <p class="count-line"><b>${enriched.length}</b> recipes found</p>
+      <div class="sort-toggle">
+        <button data-sort="best" class="${findSortMode==='best'?'active':''}">Best match</button>
+        <button data-sort="az" class="${findSortMode==='az'?'active':''}">A&ndash;Z</button>
+        <button data-sort="quick" class="${findSortMode==='quick'?'active':''}">Quickest</button>
+      </div>
+    </div>`;
+
+  function cardHtml(r, idx){
+    const fullMatch = r.missingCount===0;
+    const accent = fullMatch ? 'var(--cat-vegetable)' : 'var(--rust)';
+    const tint = fullMatch ? 'var(--cat-vegetable-tint)' : 'var(--tan-bar)';
+    const pct = r.total>0 ? Math.round((r.matched_ingredients.length/r.total)*100) : 100;
+    return `
+    <div class="vcard" style="--card-accent:${accent};--card-tint:${tint};cursor:default;">
+      <div class="vcard-top">
+        <div>
+          <h3>${r.name}</h3>
+          ${r.fname ? `<span class="fname">${r.fname}</span>` : ''}
+        </div>
+        <div class="vcard-badges">
+          ${r.difficulty ? `<span class="b-easy">${r.difficulty}</span>` : ''}
+          ${r.category ? `<span class="mini-badge">${r.category}</span>` : ''}
+        </div>
+      </div>
+      <p class="desc">${r.description||''}</p>
+      <div class="meta">
+        ${r.time ? `<span>⏱ ${r.time}</span>` : ''}
+        ${r.servings ? `<span>👥 ${r.servings}</span>` : ''}
+      </div>
+      <div class="ing-progress-row"><span>Ingredients on hand</span><b>${r.matched_ingredients.length}/${r.total}</b></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+      ${!fullMatch ? `
+        <div class="still-need-box">
+          <div class="label">🧾 Still need to buy:</div>
+          <div class="chips">${r.missing_ingredients.map(i=>`<span class="need-chip">${i}</span>`).join('')}</div>
+        </div>` : ''}
+      <ol class="find-instructions" id="find-steps-${idx}">${(r.instructions||[]).map(s=>`<li>${s}</li>`).join('')}</ol>
+      <p class="find-source" id="find-source-${idx}" style="display:none;">Source: ${r.source||'Traditional Filipino recipe'}</p>
+      <button class="view-btn" data-toggle="${idx}">View full recipe →</button>
+    </div>`;
+  }
+
+  let body = '';
+  if(findSortMode==='best'){
+    const ready = enriched.filter(r=>r.missingCount===0);
+    const almost = enriched.filter(r=>r.missingCount>=1 && r.missingCount<=2);
+    const more = enriched.filter(r=>r.missingCount>=3);
+    if(ready.length) body += `<div class="group-divider"><span>READY TO COOK</span></div>` + ready.map(cardHtml).join('');
+    if(almost.length) body += `<div class="group-divider"><span>ALMOST THERE</span></div>` + almost.map(cardHtml).join('');
+    if(more.length) body += `<div class="group-divider"><span>NEED A FEW MORE</span></div>` + more.map(cardHtml).join('');
+  } else if(findSortMode==='az'){
+    body = [...enriched].sort((a,b)=>a.name.localeCompare(b.name)).map(cardHtml).join('');
+  } else {
+    body = [...enriched].sort((a,b)=>parseMinutes(a.time)-parseMinutes(b.time)).map(cardHtml).join('');
+  }
+
+  resultsEl.innerHTML = toolbar + body;
+}
+
+document.getElementById('findResults').addEventListener('click', e=>{
+  const sortBtn = e.target.closest('[data-sort]');
+  if(sortBtn){ findSortMode = sortBtn.dataset.sort; renderFindResults(); return; }
+  const toggleBtn = e.target.closest('[data-toggle]');
+  if(toggleBtn){
+    const idx = toggleBtn.dataset.toggle;
+    const steps = document.getElementById('find-steps-'+idx);
+    const source = document.getElementById('find-source-'+idx);
+    const showing = steps.classList.toggle('show');
+    source.style.display = showing ? 'block' : 'none';
+    toggleBtn.textContent = showing ? 'Hide recipe ←' : 'View full recipe →';
+  }
+});
+
+async function runFind(){
+  const statusEl = document.getElementById('findStatus');
+  const resultsEl = document.getElementById('findResults');
+  const btn = document.getElementById('findBtn');
+  if(selectedIngredients.length===0) return;
+  btn.disabled = true;
+  statusEl.innerHTML = '<div class="loading"><span class="pot"></span> Looking for recipes you can make...</div>';
+  resultsEl.innerHTML = '';
+  lastFindResults = [];
+  try{
+    const prompt = `You are a Filipino home-cooking assistant. Assume common pantry staples (salt, pepper, cooking oil, sugar, MSG, water, rice) are always available and never appear in matched or missing ingredient lists.
+The user has these ingredients on hand: ${selectedIngredients.join(', ')}.
+Using your knowledge of traditional Filipino home cooking, suggest real Filipino ulam (viand) recipes that best match these ingredients, ranked by fewest missing ingredients first.
+Respond with ONLY valid JSON, no markdown fences, no preamble: {"recipes":[{"name":string,"fname":string (Filipino name, or repeat name if none),"description":string (max 15 words),"difficulty":"Easy"|"Medium"|"Hard","time":string (e.g. "45 min"),"servings":string (e.g. "4 servings"),"category":string (one of: Stew, Soup, Chicken, Pork, Beef, Seafood, Vegetable),"matched_ingredients":string[],"missing_ingredients":string[],"instructions":string[] (4-6 short steps),"source":string}]}
+Return exactly 3 recipes. Be extremely concise.`;
+    const data = await callClaude(prompt);
+    if(!data.recipes || data.recipes.length===0){
+      statusEl.innerHTML = '<div class="error-box"><span>No matching recipes found. Try adding a few more ingredients.</span></div>';
+    } else {
+      statusEl.innerHTML = '';
+      lastFindResults = data.recipes;
+      findSortMode = 'best';
+      renderFindResults();
+      await addHistory({type:'ingredients', query:[...selectedIngredients]});
+    }
+  }catch(err){
+    statusEl.innerHTML = `<div class="error-box"><span>Couldn't search right now. (${err.message})</span><button class="btn-secondary" id="retryFind">Retry</button></div>`;
+    document.getElementById('retryFind')?.addEventListener('click', runFind);
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+/* ================= HISTORY ================= */
+function renderHistory(){
+  const el = document.getElementById('historyContent');
+  if(history.length===0){
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h2>No history yet</h2>
+        <p>Start searching for recipes or browsing viands — your activity will show up here.</p>
+        <div class="empty-actions">
+          <button class="btn-primary" id="goIngBtn">Search by ingredients</button>
+          <button class="btn-secondary" id="goBrowseBtn">Browse viands</button>
+        </div>
+      </div>`;
+    document.getElementById('goIngBtn').addEventListener('click', ()=> switchTab('ingredients'));
+    document.getElementById('goBrowseBtn').addEventListener('click', ()=> switchTab('browse'));
+    return;
+  }
+  const cachedCount = Object.keys(recipeCache).length;
+  el.innerHTML = `
+    <div class="clear-row" style="justify-content:space-between;">
+      <span style="font-size:13px;color:var(--muted);">💾 <b style="color:var(--ink);">${cachedCount}</b> recipe${cachedCount===1?'':'s'} saved locally${cachedCount>0 ? ' <button id="clearCacheBtn" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;margin-left:6px;">clear</button>' : ''}</span>
+      <button id="clearHistBtn">Clear all history</button>
+    </div>
+    ${history.map((h,i)=>{
+      let label, title;
+      if(h.type==='viand'){ label='VIAND'; title = `${h.name} <em style="font-style:italic;color:var(--muted);">(${h.fname})</em>`; }
+      else if(h.type==='cooked'){ label='COOKED ✓'; title = `${h.name} <em style="font-style:italic;color:var(--muted);">(${h.fname})</em>`; }
+      else if(h.type==='dish'){ label='WEB SEARCH'; title = h.name; }
+      else { label='INGREDIENTS'; title = h.query.join(', '); }
+      return `
+      <div class="hist-item">
+        <div class="hist-left">
+          <span class="hlabel">${label} · ${new Date(h.ts).toLocaleString()}</span>
+          ${title}
+        </div>
+        <div class="hist-actions">
+          <button class="del" data-del="${i}">Remove</button>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+  document.getElementById('clearHistBtn').addEventListener('click', async ()=>{
+    history = []; await saveHistory(); renderHistory();
+  });
+  document.getElementById('clearCacheBtn')?.addEventListener('click', async ()=>{
+    recipeCache = {}; stepProgress = {}; await saveRecipeCache(); await saveStepProgress(); renderHistory(); renderGrid();
+  });
+  el.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      history.splice(btn.dataset.del,1); await saveHistory(); renderHistory();
+    });
+  });
+}
+
+/* ================= INIT ================= */
+(async function init(){
+  await loadState();
+  renderChips();
+  renderGrid();
+  renderDropdowns();
+  renderSelChips();
+  updateCta();
+})();
+</script>
+</body>
+</html>
