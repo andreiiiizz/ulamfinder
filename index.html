@@ -683,15 +683,30 @@ function renderChecklistOverlay(v, instructions, source){
 
 async function callClaude(prompt){
   let data;
+  
   if(window.electronAPI && window.electronAPI.callClaude){
     // Running inside the Electron app: the real API call happens in the
-    // main process, where the API key lives. This renderer never sees the key.
+    // main process, where the API key lives.
     data = await window.electronAPI.callClaude(prompt);
   } else {
-    // This app now calls the Gemini API from the Electron main process only.
-    // There's no key available here for a plain-browser preview.
-    throw new Error("This app needs to run inside the Electron shell (npm start) — no API access in a plain browser preview.");
+    // Running in browser (PWA): call the serverless function on Vercel
+    // The API key is safe on the server, never exposed to the browser
+    try {
+      const response = await fetch('/api/recipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || `HTTP ${response.status}`);
+      }
+      data = await response.json();
+    } catch (err) {
+      throw new Error(`API call failed: ${err.message}`);
+    }
   }
+  
   if(data.error) throw new Error(data.error.message || "API returned an error");
   const candidate = data.candidates && data.candidates[0];
   const text = candidate && candidate.content && candidate.content.parts
@@ -702,7 +717,7 @@ async function callClaude(prompt){
   if(s===-1||e===-1) throw new Error("No JSON in response");
   return JSON.parse(clean.slice(s,e+1));
 }
-
+  
 async function fetchInstructions(v, forceRefresh=false){
   const wrap = document.getElementById('instructionsWrap');
   const cookBtn = document.getElementById('cookBtn');
