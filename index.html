@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Ulam Finder</title>
+<title>Hapag</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -47,7 +47,7 @@
   /* ---------------- HERO ---------------- */
   .hero{
     position:relative;
-    padding:44px 30px 40px;
+    padding:30px 30px 30px;
     color:#fff;
     background:
       linear-gradient(120deg, rgba(6,10,20,.92) 0%, rgba(10,18,34,.72) 45%, rgba(15,28,48,.35) 100%),
@@ -164,8 +164,7 @@
   .ing-card>p{margin:0 0 18px;color:var(--muted);font-size:13.5px;}
   .dropdown-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;position:relative;}
   .dd{position:relative;flex:1;min-width:150px;border-radius:12px;}
-  .dd.open{border:2px solid var(--rust);z-index:31;}
-  .dd-btn{
+  .dd.open{z-index:31;}  .dd-btn{
     width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
     background:var(--surface);border:1px solid var(--border);border-radius:10px;
     padding:12px 14px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;
@@ -177,8 +176,8 @@
   }
   .dd-btn.cat-filled{background:var(--cat-color,var(--rust));border-color:var(--cat-color,var(--rust));color:#fff;}
   .dd-panel{
-    position:absolute;top:100%;left:-2px;right:-2px;z-index:30;
-    background:var(--surface);border:2px solid var(--rust);border-top:none;border-radius:0 0 11px 11px;
+    position:absolute;top:100%;left:0px;right:0px;z-index:30;
+    background:var(--surface);border:none;
     padding:8px;max-height:280px;overflow-y:auto;
     scrollbar-width:none;-ms-overflow-style:none;
   }
@@ -189,8 +188,7 @@
     font-size:13.5px;margin-bottom:6px;color:var(--ink);
   }
   .dd-panel input:focus{outline:none;}
-  .dd-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:8px;cursor:pointer;font-size:14.5px;}
-  .dd-item:hover{background:var(--hover);}
+.dd-item{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:14.5px;margin-bottom:8px;}  .dd-item:hover{background:var(--hover);}
   .dd-item.selected{background:var(--cat-color-tint,var(--tan-bar));font-weight:600;color:var(--cat-color-dark,var(--rust-dark));}
   .dd-item .check{color:var(--cat-color,var(--rust));font-weight:700;}
 
@@ -285,7 +283,7 @@
     overflow-y:auto;position:relative;
   }
   .modal-img{
-    height:120px;border-radius:18px 18px 0 0;position:relative;
+    height:100px;border-radius:18px 18px 0 0;position:relative;
     display:flex;align-items:flex-end;padding:18px 22px;
     background:linear-gradient(160deg, var(--thumb2,#8a4a24), var(--thumb1,#3d2413));
   }
@@ -344,9 +342,8 @@
 
   <div class="hero">
     <div class="hero-inner">
-      <span class="badge"><span class="flag">PH</span> FILIPINO KITCHEN</span>
-      <h1>Ulam <em>Finder</em></h1>
-      <p>Pick your ingredients &middot; discover Filipino recipes &middot; never wonder what to cook again</p>
+      <h1><em>Hapag</em></h1>
+      <p>Pick your ingredients &middot; Discover Filipino recipes &middot; Never wonder what to cook again</p>
     </div>
   </div>
 
@@ -855,6 +852,8 @@ function renderDropdowns(){
     });
   });
   document.addEventListener('click', ()=>{
+    if(e.target.closest('.dd')) return;
+
     document.querySelectorAll('.dd-panel').forEach(p=>p.hidden=true);
     document.querySelectorAll('.dd').forEach(d=>d.classList.remove('open'));
   });
